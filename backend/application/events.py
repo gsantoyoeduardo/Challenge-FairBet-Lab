@@ -9,9 +9,12 @@ class SportSerializer(serializers.ModelSerializer):
 
 
 class SelectionSerializer(serializers.ModelSerializer):
+    market_id = serializers.IntegerField(source='market.id', read_only=True)
+    market_type = serializers.CharField(source='market.type', read_only=True)
+
     class Meta:
         model = Selection
-        fields = ('id', 'name', 'odds', 'is_winner')
+        fields = ('id', 'name', 'odds', 'is_winner', 'market_id', 'market_type')
 
 
 class MarketSerializer(serializers.ModelSerializer):
@@ -45,7 +48,8 @@ class EventListSerializer(serializers.ModelSerializer):
         market_type = types_by_sport.get(obj.sport.slug, '1X2')
         mkt = obj.markets.filter(type=market_type).first()
         if mkt:
-            return [{'id': s.id, 'name': s.name, 'odds': str(s.odds)}
+            return [{'id': s.id, 'name': s.name, 'odds': str(s.odds),
+                     'market_id': mkt.id, 'market_type': mkt.type}
                     for s in mkt.selections.all()]
         return []
 

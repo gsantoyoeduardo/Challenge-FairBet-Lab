@@ -11,6 +11,8 @@ export interface Selection {
   name: string
   odds: string
   is_winner: boolean | null
+  market_id?: number
+  market_type?: string
 }
 
 export interface Market {

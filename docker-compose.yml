@@ -24,10 +24,7 @@ services:
     build:
       context: ./backend
       dockerfile: ../Dockerfile.backend
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py seed_demo &&
-             python manage.py runserver 0.0.0.0:8000"
+    command: daphne -b 0.0.0.0 -p 8000 fairbet.asgi:application
     volumes:
       - ./backend:/app
     ports:
@@ -49,6 +46,33 @@ services:
       REDIS_HOST: redis
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+
+  seed:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile.backend
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py seed_demo"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DEBUG: "True"
+      SECRET_KEY: django-insecure-dev-key-change-in-production
+      ALLOWED_HOSTS: "*"
+      POSTGRES_DB: fairbet
+      POSTGRES_USER: fairbet_user
+      POSTGRES_PASSWORD: fairbet_pass
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: redis
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    profiles:
+      - seed
 
   frontend:
     build:

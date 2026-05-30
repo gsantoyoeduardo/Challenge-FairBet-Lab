@@ -41,7 +41,7 @@ export default function EventCard({ event, onSelect, selectedIds, compact, featu
             return (
               <button
                 key={o.id}
-                onClick={(e) => { e.stopPropagation(); onSelect(o.id, o.odds, o.name, event) }}
+                onClick={(e) => { e.stopPropagation(); onSelect(o.id, o.odds, o.name, event, o.market_id, o.market_type) }}
                 className={`px-3 py-1 rounded text-xs font-semibold transition ${
                   isSel ? 'bg-primary-500 text-black' : 'bg-black hover:bg-primary-500 hover:text-black'
                 }`}
@@ -77,7 +77,7 @@ export default function EventCard({ event, onSelect, selectedIds, compact, featu
             return (
               <button
                 key={o.id}
-                onClick={(e) => { e.stopPropagation(); onSelect(o.id, o.odds, o.name, event) }}
+                onClick={(e) => { e.stopPropagation(); onSelect(o.id, o.odds, o.name, event, o.market_id, o.market_type) }}
                 className={`flex-1 py-1.5 rounded text-xs font-semibold transition ${
                   isSel ? 'bg-primary-500 text-black' : 'bg-black hover:bg-[#252525] text-gray-300'
                 }`}
@@ -124,7 +124,7 @@ export default function EventCard({ event, onSelect, selectedIds, compact, featu
             return (
               <button
                 key={o.id}
-                onClick={(e) => { e.stopPropagation(); onSelect(o.id, o.odds, o.name, event) }}
+                onClick={(e) => { e.stopPropagation(); onSelect(o.id, o.odds, o.name, event, o.market_id, o.market_type) }}
                 className={`flex-1 py-2 rounded text-xs font-semibold transition ${
                   isSel ? 'bg-primary-500 text-black' : 'bg-black hover:bg-[#252525] text-gray-300'
                 }`}
@@ -151,7 +151,7 @@ export default function EventCard({ event, onSelect, selectedIds, compact, featu
                 return (
                   <button
                     key={sel.id}
-                    onClick={() => onSelect(sel.id, sel.odds, sel.name, event)}
+                    onClick={() => onSelect(sel.id, sel.odds, sel.name, event, sel.market_id, sel.market_type)}
                     disabled={event.status !== 'programado' && event.status !== 'en_vivo'}
                     className={`w-full flex items-center justify-between px-3 py-1.5 rounded text-xs transition ${
                       isSelected
@@ -168,7 +168,7 @@ export default function EventCard({ event, onSelect, selectedIds, compact, featu
         )}
       </div>
     <p className="text-[9px] text-gray-600 mt-2 text-center">
-      Juega con responsabilidad. El juego en exceso puede causar adicción.
+      Juega con responsabilidad. El juego en exceso puede causar adicciï¿½n.
     </p>
     </div>
   )

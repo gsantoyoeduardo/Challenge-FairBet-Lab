@@ -1,10 +1,12 @@
 from django.http import HttpResponse
 from rest_framework import generics, permissions
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from domain.operator import calcular_ggr, calcular_exposure, generar_reporte_csv
 from application.operator import MetricsSerializer
+from application.betting import BetSerializer
 from infrastructure.betting import Bet
 
 
@@ -84,3 +86,26 @@ class ReporteView(generics.GenericAPIView):
             return response
         except Exception as e:
             return Response({'error': str(e)}, status=400)
+
+
+class BetListView(generics.ListAPIView):
+    serializer_class = BetSerializer
+    permission_classes = [permissions.IsAdminUser]
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        qs = Bet.objects.select_related('user').prefetch_related('selections__selection__market__event')
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            qs = qs.filter(status=status_param)
+        return qs.order_by('-placed_at')
+
+    @extend_schema(
+        summary='Listar todas las apuestas (admin)',
+        description='Lista todas las apuestas del sistema con filtro por status.',
+        parameters=[
+            OpenApiParameter(name='status', type=str, location=OpenApiParameter.QUERY, description='accepted/won/lost/cashed_out/cancelled'),
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)

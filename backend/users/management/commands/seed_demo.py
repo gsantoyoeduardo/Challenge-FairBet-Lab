@@ -23,6 +23,31 @@ class Command(BaseCommand):
         Account.objects.get_or_create(user=casa_user, type='apuestas_pendientes')
         self.stdout.write(self.style.SUCCESS('Cuentas casa y apuestas_pendientes creadas'))
 
+        admin_user, created = User.objects.get_or_create(
+            username='admin',
+            defaults={
+                'email': 'admin@fairbet.com',
+                'is_staff': True,
+                'is_superuser': True,
+            },
+        )
+        if created or not admin_user.has_usable_password():
+            admin_user.set_password('admin1234')
+            admin_user.is_staff = True
+            admin_user.is_superuser = True
+            admin_user.save()
+        Account.objects.get_or_create(user=admin_user, type='main')
+        Account.objects.get_or_create(user=admin_user, type='bonus')
+        UserProfile.objects.get_or_create(
+            user=admin_user,
+            defaults={
+                'dni': '00000001',
+                'fecha_nacimiento': '1990-01-01',
+                'estado_cuenta': 'verificado',
+            },
+        )
+        self.stdout.write(self.style.SUCCESS('Superusuario admin creado con cuentas wallet y perfil verificado'))
+
         demo_users = [
             {
                 'username': 'demo1',

@@ -5,7 +5,7 @@ import { useBalanceStore } from '../../store/balanceStore'
 import { wallet as walletService } from '../../services/auth'
 import {
   X, Wallet, Bell, ArrowDownToLine, ArrowUpFromLine,
-  User, Clock, Gift, Settings, LogOut
+  User, Clock, Gift, Settings, LogOut, Shield, Gamepad2
 } from 'lucide-react'
 import WithdrawModal from '../wallet/WithdrawModal'
 
@@ -16,7 +16,7 @@ interface UserPanelProps {
 
 export default function UserPanel({ onClose, onDeposit }: UserPanelProps) {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  const { user, logout, isAdminMode, enableAdminMode, disableAdminMode } = useAuth()
   const { balance, setBalance, bonusBalance, setBonusBalance } = useBalanceStore()
   const [withdrawOpen, setWithdrawOpen] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -83,6 +83,40 @@ export default function UserPanel({ onClose, onDeposit }: UserPanelProps) {
             <span className="text-sm font-bold text-green-400">{(balance + bonusBalance).toFixed(4)} BP</span>
           </div>
         </div>
+
+        {user?.is_staff && (
+          <div className="p-3 border-b border-gray-800">
+            <button
+              onClick={() => {
+                if (isAdminMode) {
+                  disableAdminMode()
+                  navigate('/')
+                } else {
+                  enableAdminMode()
+                  navigate('/admin')
+                }
+                onClose()
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition text-sm ${
+                isAdminMode
+                  ? 'bg-primary-600/10 text-primary-400 hover:bg-primary-600/20'
+                  : 'bg-gray-800/50 text-gray-300 hover:bg-gray-800'
+              }`}
+            >
+              {isAdminMode ? (
+                <>
+                  <Gamepad2 className="w-4 h-4" />
+                  Cambiar a Modo Juego
+                </>
+              ) : (
+                <>
+                  <Shield className="w-4 h-4" />
+                  Cambiar a Modo Admin
+                </>
+              )}
+            </button>
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto p-3">
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#1a1a1a] transition text-sm text-gray-300">

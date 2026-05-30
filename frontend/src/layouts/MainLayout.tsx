@@ -6,7 +6,7 @@ export default function MainLayout() {
   return (
     <div className="min-h-screen bg-black flex flex-col">
       <AppBar />
-      <main className="flex-1">
+      <main className="flex-1 pt-6 pb-8 px-4">
         <Outlet />
       </main>
       <Footer />

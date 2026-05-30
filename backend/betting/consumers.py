@@ -3,7 +3,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
-from infrastructure.events import Event, Market, Selection
 
 
 class EventOddsConsumer(AsyncWebsocketConsumer):
@@ -38,6 +37,7 @@ class EventOddsConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_odds_data(self):
+        from infrastructure.events import Event
         try:
             event = Event.objects.prefetch_related(
                 'markets__selections'

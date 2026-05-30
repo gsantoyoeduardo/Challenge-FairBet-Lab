@@ -126,7 +126,7 @@ export default function EventDetailView({ eventId, onBack, onSelect, selectedIds
                   return (
                     <button
                       key={s.id}
-                      onClick={() => onSelect(s.id, s.odds, s.name, event)}
+                      onClick={() => onSelect(s.id, s.odds, s.name, event, m.id, m.type)}
                       className={`min-w-[65px] px-2.5 py-1.5 rounded text-xs font-semibold transition-all ${
                         isSel
                           ? 'bg-primary-500 text-black'

@@ -5,6 +5,7 @@ export interface User {
   dni: string
   estado_cuenta: string
   date_joined: string
+  is_staff: boolean
 }
 
 export interface AuthTokens {

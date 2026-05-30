@@ -46,16 +46,51 @@ class CashOutSerializer(serializers.Serializer):
     idempotency_key = serializers.CharField(max_length=128, required=False, allow_blank=True)
 
 
+class BetSelectionNestedSerializer(serializers.Serializer):
+    selection_id = serializers.IntegerField()
+    selection_name = serializers.CharField(source='selection.name')
+    market_type = serializers.CharField(source='selection.market.type')
+    market_name = serializers.CharField(source='selection.market.name')
+    event = serializers.SerializerMethodField()
+    odds_at_time = serializers.DecimalField(max_digits=18, decimal_places=4)
+
+    def get_event(self, obj):
+        event = obj.selection.market.event
+        return {
+            'id': event.id,
+            'home': event.team_home,
+            'away': event.team_away,
+        }
+
+
 class BetSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
+    selections = BetSelectionNestedSerializer(many=True, read_only=True)
+    cashout_preview = serializers.SerializerMethodField()
 
     class Meta:
         model = Bet
         fields = ('id', 'username', 'stake', 'total_odds', 'status',
-                  'placed_at', 'settled_at', 'payout')
+                  'placed_at', 'settled_at', 'payout', 'selections', 'cashout_preview')
+
+    def get_cashout_preview(self, obj):
+        if obj.status != 'accepted':
+            return None
+        try:
+            selections = obj.selections.select_related('selection').all()
+            current_implied = Decimal('1.0000')
+            for bs in selections:
+                current_implied *= bs.selection.odds
+            cashout_amount = obj.stake * obj.total_odds / current_implied
+            cashout_amount = (cashout_amount * CASHOUT_HOUSE_FACTOR).quantize(Decimal('0.0001'))
+            return str(cashout_amount)
+        except Exception:
+            return None
 
 
 def validar_usuario_apto(user) -> str | None:
+    if user.is_staff:
+        return None
     try:
         profile = user.profile
     except UserProfile.DoesNotExist:

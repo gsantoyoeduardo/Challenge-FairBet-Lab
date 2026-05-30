@@ -15,6 +15,8 @@ interface Selection {
   name: string
   eventHome: string
   eventAway: string
+  marketId?: number
+  marketType?: string
 }
 
 export default function BettingPage() {
@@ -34,11 +36,27 @@ export default function BettingPage() {
     }
   }, [selectedSport])
 
-  const handleSelectOdds = (selectionId: number, odds: string, name: string, event: EventItem | any) => {
+  const handleSelectOdds = (selectionId: number, odds: string, name: string, event: EventItem | any, marketId?: number, marketType?: string) => {
     if (!odds || odds === '0') return
     setSelections((prev) => {
       if (prev.find((s) => s.selectionId === selectionId)) {
         return prev.filter((s) => s.selectionId !== selectionId)
+      }
+      if (marketId) {
+        const existingIdx = prev.findIndex((s) => s.marketId === marketId)
+        if (existingIdx !== -1) {
+          const newSelections = [...prev]
+          newSelections[existingIdx] = {
+            selectionId,
+            odds,
+            name,
+            eventHome: event.team_home || event.teamHome,
+            eventAway: event.team_away || event.teamAway,
+            marketId,
+            marketType,
+          }
+          return newSelections
+        }
       }
       return [...prev, {
         selectionId,
@@ -46,6 +64,8 @@ export default function BettingPage() {
         name,
         eventHome: event.team_home || event.teamHome,
         eventAway: event.team_away || event.teamAway,
+        marketId,
+        marketType,
       }]
     })
     setRightTab('cupon')

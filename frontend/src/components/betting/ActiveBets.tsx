@@ -111,7 +111,11 @@ export default function ActiveBets() {
                   disabled={cashingOut === bet.id}
                   className="w-full mt-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold py-1.5 rounded text-[10px] transition"
                 >
-                  {cashingOut === bet.id ? 'Procesando...' : 'Cash-out'}
+                  {cashingOut === bet.id
+                    ? 'Procesando...'
+                    : bet.cashout_preview
+                      ? `Cash-out: ${parseFloat(bet.cashout_preview).toFixed(2)} BP`
+                      : 'Cash-out'}
                 </button>
               )}
             </div>

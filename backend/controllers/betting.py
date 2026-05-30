@@ -12,6 +12,8 @@ from application.betting import (
 )
 from infrastructure.betting import Bet
 from infrastructure.users import IdempotencyKey
+from decimal import Decimal
+from domain.events import CASHOUT_HOUSE_FACTOR
 
 APOSTAR_EXAMPLE = OpenApiExample(
     'Apuesta simple 1X2',
@@ -134,6 +136,45 @@ class CashOutView(generics.GenericAPIView):
                     defaults={'response_data': response_data},
                 )
             return Response(response_data, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CashOutPreviewView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary='Preview de cash-out',
+        description='Calcula el monto de cash-out sin ejecutar la operacion.',
+        responses={
+            200: OpenApiTypes.OBJECT,
+            400: OpenApiTypes.OBJECT,
+        },
+    )
+    def get(self, request, bet_id):
+        try:
+            bet = Bet.objects.select_related('user').prefetch_related(
+                'selections__selection'
+            ).get(id=bet_id, user=request.user)
+            if bet.status != 'accepted':
+                return Response(
+                    {'error': f'Apuesta no elegible. Estado: {bet.status}'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            selections = bet.selections.select_related('selection').all()
+            current_implied = Decimal('1.0000')
+            for bs in selections:
+                current_implied *= bs.selection.odds
+            cashout_amount = bet.stake * bet.total_odds / current_implied
+            cashout_amount = (cashout_amount * CASHOUT_HOUSE_FACTOR).quantize(Decimal('0.0001'))
+            return Response({
+                'bet_id': bet_id,
+                'stake': str(bet.stake),
+                'total_odds': str(bet.total_odds),
+                'cashout_amount': str(cashout_amount),
+            })
+        except Bet.DoesNotExist:
+            return Response({'error': 'Apuesta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
         except ValueError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
