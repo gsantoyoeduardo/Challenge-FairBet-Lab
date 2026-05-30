@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { adminBetting, type AdminBet } from '../../services/adminBetting'
-import { CheckCircle, XCircle, Loader2, ChevronDown, ChevronUp, Search } from 'lucide-react'
+import { adminEvents } from '../../services/adminEvents'
+import { CheckCircle, XCircle, Loader2, ChevronDown, ChevronUp, Search, Shield } from 'lucide-react'
 
 export default function BetManagerPage() {
   const [bets, setBets] = useState<AdminBet[]>([])
@@ -10,6 +11,14 @@ export default function BetManagerPage() {
   const [liquidating, setLiquidating] = useState<number | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [mensaje, setMensaje] = useState('')
+  const [exposureCache, setExposureCache] = useState<Record<number, {
+    selection_id: number
+    selection_name: string
+    odds: string
+    bets_count: number
+    potential_payout: string
+  }[]>>({})
+  const [loadingExposure, setLoadingExposure] = useState(false)
 
   const load = () => {
     setLoading(true)
@@ -20,6 +29,27 @@ export default function BetManagerPage() {
   }
 
   useEffect(() => { load() }, [filter])
+
+  useEffect(() => {
+    if (!expandedBetId) return
+    const bet = bets.find(b => b.id === expandedBetId)
+    if (!bet) return
+
+    const eventIds = [...new Set(bet.selections.map(s => s.event_id))]
+    const missing = eventIds.filter(id => !(id in exposureCache))
+    if (missing.length === 0) return
+
+    setLoadingExposure(true)
+    Promise.all(missing.map(id => adminEvents.getExposure(id).then(data => ({ id, data })).catch(() => ({ id, data: [] }))))
+      .then(results => {
+        setExposureCache(prev => {
+          const next = { ...prev }
+          results.forEach(r => { next[r.id] = r.data })
+          return next
+        })
+      })
+      .finally(() => setLoadingExposure(false))
+  }, [expandedBetId, bets])
 
   const handleLiquidate = async (betId: number, markAsWon: boolean) => {
     setLiquidating(betId)
@@ -167,6 +197,60 @@ export default function BetManagerPage() {
                       </div>
                     ))}
                   </div>
+
+                  {(() => {
+                    const seenEvents = new Map<number, { home: string; away: string }>()
+                    bet.selections.forEach(sel => {
+                      if (!seenEvents.has(sel.event_id)) {
+                        seenEvents.set(sel.event_id, { home: sel.event.home, away: sel.event.away })
+                      }
+                    })
+                    const uniqueEventIds = [...seenEvents.keys()]
+                    if (uniqueEventIds.length === 0) return null
+                    return (
+                      <div className="p-4 border-t border-gray-800 space-y-4">
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1.5">
+                          <Shield className="w-3.5 h-3.5 text-orange-400" />
+                          Exposure por Evento
+                        </p>
+                        {uniqueEventIds.map(eventId => {
+                          const ev = seenEvents.get(eventId)!
+                          const data = exposureCache[eventId]
+                          return (
+                            <div key={eventId} className="bg-[#111] border border-gray-800 rounded-lg overflow-hidden">
+                              <div className="px-3 py-2 bg-black/30 border-b border-gray-800/50">
+                                <p className="text-xs font-semibold text-white">{ev.home} vs {ev.away}</p>
+                              </div>
+                              {loadingExposure && !data ? (
+                                <div className="flex justify-center py-3">
+                                  <Loader2 className="w-4 h-4 text-gray-500 animate-spin" />
+                                </div>
+                              ) : data && data.length > 0 ? (
+                                <div className="divide-y divide-gray-800/30">
+                                  <div className="grid grid-cols-[1fr_70px_70px_90px] gap-2 px-3 py-1.5 text-[10px] text-gray-500 font-semibold">
+                                    <span>Seleccion</span>
+                                    <span className="text-center">Odds</span>
+                                    <span className="text-center">Apuestas</span>
+                                    <span className="text-center">Payout Pot.</span>
+                                  </div>
+                                  {data.map(sel => (
+                                    <div key={sel.selection_id} className="grid grid-cols-[1fr_70px_70px_90px] gap-2 px-3 py-2 items-center text-xs">
+                                      <span className="text-gray-300 truncate">{sel.selection_name}</span>
+                                      <span className="text-center text-primary-400">{parseFloat(sel.odds).toFixed(2)}</span>
+                                      <span className="text-center text-gray-400">{sel.bets_count}</span>
+                                      <span className="text-center text-red-400 font-semibold">{parseFloat(sel.potential_payout).toFixed(2)} BP</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-gray-500 text-center py-3 text-xs">Sin datos de exposure</p>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )
+                  })()}
 
                   {bet.status === 'accepted' && (
                     <div className="p-4 border-t border-gray-800 flex gap-3">

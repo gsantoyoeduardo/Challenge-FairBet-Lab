@@ -10,6 +10,8 @@ import BonusesPage from './pages/BonusesPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import ReportsPage from './pages/ReportsPage'
 import BetManagerPage from './pages/admin/BetManagerPage'
+import EventManagerPage from './pages/admin/EventManagerPage'
+import EventDetailAdminPage from './pages/admin/EventDetailAdminPage'
 import AdminRoute from './routes/AdminRoute'
 import GameRoute from './routes/GameRoute'
 
@@ -31,6 +33,8 @@ function App() {
               <Route path="/admin" element={<AdminDashboardPage />} />
               <Route path="/admin/reports" element={<ReportsPage />} />
               <Route path="/admin/bets" element={<BetManagerPage />} />
+              <Route path="/admin/events" element={<EventManagerPage />} />
+              <Route path="/admin/events/:id" element={<EventDetailAdminPage />} />
             </Route>
           </Route>
         </Routes>

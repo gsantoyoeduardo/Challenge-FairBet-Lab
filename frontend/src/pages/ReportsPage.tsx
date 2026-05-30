@@ -7,14 +7,16 @@ export default function ReportsPage() {
   const [mes, setMes] = useState(now.getMonth() + 1)
   const [anio, setAnio] = useState(now.getFullYear())
 
-  const handleDownload = () => {
-    const url = operator.getReportURL(mes, anio)
+  const handleDownload = async () => {
+    const blob = await operator.downloadReport(mes, anio)
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
     a.download = `reporte_${anio}_${String(mes).padStart(2, '0')}.csv`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',

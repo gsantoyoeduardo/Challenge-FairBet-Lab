@@ -1,8 +1,18 @@
-import { Navigate, Outlet } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import { Navigate, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function GameRoute() {
   const { user, loading, isAdminMode } = useAuth()
+  const navigate = useNavigate()
+  const prevAdminModeRef = useRef(isAdminMode)
+
+  useEffect(() => {
+    if (!loading && user?.is_staff && isAdminMode && !prevAdminModeRef.current) {
+      navigate('/admin', { replace: true })
+    }
+    prevAdminModeRef.current = isAdminMode
+  }, [isAdminMode, loading, user?.is_staff, navigate])
 
   if (loading) {
     return (
@@ -14,10 +24,6 @@ export default function GameRoute() {
 
   if (!user) {
     return <Navigate to="/" replace />
-  }
-
-  if (user.is_staff && isAdminMode) {
-    return <Navigate to="/admin" replace />
   }
 
   return <Outlet />

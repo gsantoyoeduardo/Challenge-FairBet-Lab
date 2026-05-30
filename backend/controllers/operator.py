@@ -109,3 +109,52 @@ class BetListView(generics.ListAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+
+
+class ExposureSummaryView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    @extend_schema(
+        summary='Resumen de exposure por evento',
+        description='Lista todos los eventos con apuestas activas y su exposure total.',
+    )
+    def get(self, request):
+        from decimal import Decimal
+        from django.db.models import Count, Max, Sum, F
+        from infrastructure.events import Event
+
+        events_with_bets = (
+            Bet.objects
+            .filter(status='accepted')
+            .select_related('selections__selection__market__event')
+            .prefetch_related('selections__selection__market__event')
+            .values(
+                'selections__selection__market__event_id',
+                'selections__selection__market__event__team_home',
+                'selections__selection__market__event__team_away',
+                'selections__selection__market__event__sport__name',
+                'selections__selection__market__event__start_time',
+                'selections__selection__market__event__status',
+            )
+            .annotate(
+                total_bets=Count('id', distinct=True),
+                max_payout=Max(F('stake') * F('total_odds')),
+            )
+            .order_by('-max_payout')
+        )
+
+        summary = []
+        for item in events_with_bets:
+            event_id = item['selections__selection__market__event_id']
+            summary.append({
+                'event_id': event_id,
+                'team_home': item['selections__selection__market__event__team_home'],
+                'team_away': item['selections__selection__market__event__team_away'],
+                'sport': item['selections__selection__market__event__sport__name'],
+                'start_time': item['selections__selection__market__event__start_time'],
+                'status': item['selections__selection__market__event__status'],
+                'total_bets': item['total_bets'],
+                'max_payout': str(item['max_payout']),
+            })
+
+        return Response(summary)

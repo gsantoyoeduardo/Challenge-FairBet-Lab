@@ -1,9 +1,18 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import { Navigate, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function AdminRoute() {
   const { user, loading, isAdminMode } = useAuth()
-  const location = useLocation()
+  const navigate = useNavigate()
+  const prevAdminModeRef = useRef(isAdminMode)
+
+  useEffect(() => {
+    if (!loading && user?.is_staff && !isAdminMode && prevAdminModeRef.current) {
+      navigate('/', { replace: true })
+    }
+    prevAdminModeRef.current = isAdminMode
+  }, [isAdminMode, loading, user?.is_staff, navigate])
 
   if (loading) {
     return (

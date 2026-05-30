@@ -90,10 +90,8 @@ export default function UserPanel({ onClose, onDeposit }: UserPanelProps) {
               onClick={() => {
                 if (isAdminMode) {
                   disableAdminMode()
-                  navigate('/')
                 } else {
                   enableAdminMode()
-                  navigate('/admin')
                 }
                 onClose()
               }}

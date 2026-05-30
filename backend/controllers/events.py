@@ -1,3 +1,4 @@
+from decimal import Decimal
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
@@ -182,4 +183,157 @@ class SetSelectionWinnerView(generics.GenericAPIView):
             'market': sel.market.name,
             'event': str(sel.market.event),
             'is_winner': sel.is_winner,
+        })
+
+
+class CreateEventView(generics.GenericAPIView):
+    permission_classes = [IsAdminUser]
+
+    @extend_schema(
+        summary='Crear evento (admin)',
+        description='Crea un nuevo evento con mercados y selecciones generados automaticamente.',
+        request=OpenApiTypes.OBJECT,
+        responses={
+            201: OpenApiTypes.OBJECT,
+            400: OpenApiTypes.OBJECT,
+        },
+        examples=[
+            OpenApiExample(
+                'Crear evento futbol',
+                value={
+                    'sport_slug': 'football',
+                    'team_home': 'Alianza Lima',
+                    'team_away': 'Universitario',
+                    'start_time': '2026-06-01T20:00:00Z',
+                    'status': 'programado',
+                },
+                request_only=True,
+            ),
+        ],
+    )
+    def post(self, request):
+        from django.utils import timezone
+        from datetime import datetime
+
+        sport_slug = request.data.get('sport_slug')
+        team_home = request.data.get('team_home')
+        team_away = request.data.get('team_away')
+        start_time_str = request.data.get('start_time')
+        event_status = request.data.get('status', 'programado')
+
+        if not sport_slug or not team_home or not team_away:
+            return Response(
+                {'error': 'sport_slug, team_home y team_away son requeridos'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            sport = Sport.objects.get(slug=sport_slug)
+        except Sport.DoesNotExist:
+            return Response(
+                {'error': f'Deporte "{sport_slug}" no encontrado'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        start_time = timezone.now()
+        if start_time_str:
+            try:
+                start_time = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
+            except ValueError:
+                return Response(
+                    {'error': 'Formato de start_time invalido. Use ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        event = Event.objects.create(
+            sport=sport,
+            team_home=team_home,
+            team_away=team_away,
+            start_time=start_time,
+            status=event_status,
+        )
+
+        from domain.events import (
+            generate_1X2, generate_double_chance, generate_draw_no_bet,
+            generate_ou_goals, generate_btts, generate_handicap,
+            calculate_odds_with_margin,
+        )
+        from django.conf import settings
+        margin = Decimal(settings.EVENTS_MARGIN_FACTOR)
+
+        raw_1X2 = generate_1X2()
+        o1, oX, o2 = calculate_odds_with_margin(raw_1X2, margin) if margin > 0 else raw_1X2
+        mkt = Market.objects.create(event=event, type='1X2', name='Ganador de Partido')
+        mkt.selections.create(name='Local', odds=o1)
+        mkt.selections.create(name='Empate', odds=oX)
+        mkt.selections.create(name='Visitante', odds=o2)
+
+        dc = generate_double_chance(o1, oX, o2)
+        mkt_dc = Market.objects.create(event=event, type='DOUBLE_CHANCE', name='Doble Oportunidad')
+        mkt_dc.selections.create(name='1X', odds=dc[0])
+        mkt_dc.selections.create(name='12', odds=dc[1])
+        mkt_dc.selections.create(name='X2', odds=dc[2])
+
+        ou_ov, ou_un = generate_ou_goals()
+        mkt_ou = Market.objects.create(event=event, type='OU_25', name='Over/Under 2.5')
+        mkt_ou.selections.create(name='Over', odds=ou_ov)
+        mkt_ou.selections.create(name='Under', odds=ou_un)
+
+        btts_si, btts_no = generate_btts()
+        mkt_btts = Market.objects.create(event=event, type='BTTS', name='Ambos Equipos Anotan')
+        mkt_btts.selections.create(name='Si', odds=btts_si)
+        mkt_btts.selections.create(name='No', odds=btts_no)
+
+        return Response({
+            'id': event.id,
+            'sport': sport.name,
+            'team_home': event.team_home,
+            'team_away': event.team_away,
+            'start_time': event.start_time.isoformat(),
+            'status': event.status,
+            'markets_created': 4,
+        }, status=status.HTTP_201_CREATED)
+
+
+class SuspendMarketView(generics.GenericAPIView):
+    permission_classes = [IsAdminUser]
+
+    @extend_schema(
+        summary='Suspender mercado (admin)',
+        description='Suspende un mercado temporalmente o permanentemente.',
+        request=OpenApiTypes.OBJECT,
+        responses={
+            200: OpenApiTypes.OBJECT,
+            400: OpenApiTypes.OBJECT,
+        },
+        examples=[
+            OpenApiExample('Suspender 60 segundos', value={'suspended_until': 60}),
+            OpenApiExample('Suspender permanentemente', value={'suspended_until': None}),
+        ],
+    )
+    def post(self, request, market_id):
+        from django.utils import timezone
+        from datetime import timedelta
+
+        try:
+            market = Market.objects.select_related('event').get(id=market_id)
+        except Market.DoesNotExist:
+            return Response({'error': 'Mercado no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        suspended_until = request.data.get('suspended_until')
+
+        if suspended_until is None:
+            market.suspended_until = None
+        elif isinstance(suspended_until, (int, float)):
+            market.suspended_until = timezone.now() + timedelta(seconds=int(suspended_until))
+        else:
+            market.suspended_until = None
+
+        market.save()
+
+        return Response({
+            'market_id': market.id,
+            'market_name': market.name,
+            'event': str(market.event),
+            'suspended_until': market.suspended_until.isoformat() if market.suspended_until else None,
         })

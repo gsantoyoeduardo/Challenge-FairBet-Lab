@@ -55,6 +55,9 @@ export default function AppBar() {
                 <a href="/admin/bets" className="px-3 py-2 text-sm text-gray-300 hover:text-primary-400 transition rounded-lg">
                   Apuestas
                 </a>
+                <a href="/admin/events" className="px-3 py-2 text-sm text-gray-300 hover:text-primary-400 transition rounded-lg">
+                  Eventos
+                </a>
                 <a href="/admin/reports" className="px-3 py-2 text-sm text-gray-300 hover:text-primary-400 transition rounded-lg">
                   Reportes
                 </a>
@@ -143,6 +146,9 @@ export default function AppBar() {
               </a>
               <a href="/admin/bets" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-gray-300 hover:text-primary-400 rounded-lg">
                 Apuestas
+              </a>
+              <a href="/admin/events" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-gray-300 hover:text-primary-400 rounded-lg">
+                Eventos
               </a>
               <a href="/admin/reports" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-gray-300 hover:text-primary-400 rounded-lg">
                 Reportes

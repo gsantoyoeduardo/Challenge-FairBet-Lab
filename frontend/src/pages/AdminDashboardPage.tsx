@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { operator, type OperatorMetrics } from '../services/operator'
 import AdminMetrics from '../components/admin/AdminMetrics'
-import ExposureChart from '../components/admin/ExposureChart'
 import { useAuth } from '../context/AuthContext'
 
 export default function AdminDashboardPage() {
@@ -20,11 +19,6 @@ export default function AdminDashboardPage() {
 
       <div className="space-y-6">
         <AdminMetrics metrics={metrics} />
-
-        <div>
-          <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3">Exposure por Evento</h2>
-          <ExposureChart />
-        </div>
       </div>
     </div>
   )

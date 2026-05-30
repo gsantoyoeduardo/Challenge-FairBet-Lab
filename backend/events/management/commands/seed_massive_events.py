@@ -107,13 +107,15 @@ class Command(BaseCommand):
                         t2 = teams[(day * 2 + 1) % len(teams)]
                         if t1 == t2:
                             t2 = teams[(day * 2 + 3) % len(teams)]
-                        ev = Event.objects.create(
+                        start = base_time + timedelta(days=day)
+                        status_val = random.choice(['programado', 'programado', 'programado', 'programado', 'en_vivo'])
+                        ev, created = Event.objects.get_or_create(
                             sport=sport, team_home=t1, team_away=t2,
-                            start_time=base_time + timedelta(days=day),
-                            status=random.choice(['programado', 'programado', 'programado', 'programado', 'en_vivo']),
+                            defaults={'start_time': start, 'status': status_val},
                         )
-                        create_football_markets(ev)
-                        total += 1
+                        if created:
+                            create_football_markets(ev)
+                            total += 1
 
                 elif sport_key == 'tennis':
                     players = TENNIS_PLAYERS.get(league_key, [])
@@ -123,13 +125,15 @@ class Command(BaseCommand):
                         p2 = players[(i + random.randint(1, len(players) - 1)) % len(players)]
                         if p1 == p2:
                             continue
-                        ev = Event.objects.create(
+                        start = base_time + timedelta(hours=i * 2)
+                        status_val = random.choice(['programado', 'programado', 'programado', 'en_vivo'])
+                        ev, created = Event.objects.get_or_create(
                             sport=sport, team_home=p1, team_away=p2,
-                            start_time=base_time + timedelta(hours=i * 2),
-                            status=random.choice(['programado', 'programado', 'programado', 'en_vivo']),
+                            defaults={'start_time': start, 'status': status_val},
                         )
-                        create_tennis_markets(ev)
-                        total += 1
+                        if created:
+                            create_tennis_markets(ev)
+                            total += 1
 
                 elif sport_key == 'basketball':
                     teams = BASKETBALL_TEAMS.get(league_key, [])
@@ -137,13 +141,15 @@ class Command(BaseCommand):
                     for day in range(min(len(teams) // 2, 9)):
                         t1 = teams[day * 2 % len(teams)]
                         t2 = teams[(day * 2 + 1) % len(teams)]
-                        ev = Event.objects.create(
+                        start = base_time + timedelta(hours=day * 3)
+                        status_val = random.choice(['programado', 'programado', 'en_vivo'])
+                        ev, created = Event.objects.get_or_create(
                             sport=sport, team_home=t1, team_away=t2,
-                            start_time=base_time + timedelta(hours=day * 3),
-                            status=random.choice(['programado', 'programado', 'en_vivo']),
+                            defaults={'start_time': start, 'status': status_val},
                         )
-                        create_basketball_markets(ev)
-                        total += 1
+                        if created:
+                            create_basketball_markets(ev)
+                            total += 1
 
                 elif sport_key == 'volleyball':
                     teams = VOLLEYBALL_TEAMS.get(league_key, [])
@@ -151,13 +157,15 @@ class Command(BaseCommand):
                     for day in range(min(len(teams) // 2, 6)):
                         t1 = teams[day * 2 % len(teams)]
                         t2 = teams[(day * 2 + 1) % len(teams)]
-                        ev = Event.objects.create(
+                        start = base_time + timedelta(hours=day * 4)
+                        status_val = random.choice(['programado', 'programado', 'en_vivo'])
+                        ev, created = Event.objects.get_or_create(
                             sport=sport, team_home=t1, team_away=t2,
-                            start_time=base_time + timedelta(hours=day * 4),
-                            status=random.choice(['programado', 'programado', 'en_vivo']),
+                            defaults={'start_time': start, 'status': status_val},
                         )
-                        create_simple_markets(ev)
-                        total += 1
+                        if created:
+                            create_simple_markets(ev)
+                            total += 1
 
         self.stdout.write(self.style.SUCCESS(f'Total eventos creados: {total}'))
 
