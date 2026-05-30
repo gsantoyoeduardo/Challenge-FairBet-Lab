@@ -1,3 +1,16 @@
+"""
+Módulo `application.users` — Casos de uso relacionados con usuarios.
+
+Función:
+- Provee serializadores y lógica de registro, creación de perfil y cuenta
+    wallet inicial. Orquesta creación atómica de `User`, `UserProfile` y
+    `Account`.
+
+Relaciones:
+- Usado por `controllers/users.py` para endpoints de registro/login/me.
+- Interactúa con `infrastructure.users.UserProfile` y `infrastructure.wallet.Account`.
+"""
+
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from django.db import transaction

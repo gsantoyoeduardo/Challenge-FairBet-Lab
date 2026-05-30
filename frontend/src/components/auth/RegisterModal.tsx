@@ -33,12 +33,32 @@ export default function RegisterModal({ onClose, onLoginClick }: RegisterModalPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (!/^\d{8}$/.test(form.dni)) {
+      setError('El DNI debe tener exactamente 8 digitos')
+      return
+    }
+
     setLoading(true)
     try {
       await register(form)
       onClose()
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al registrar usuario')
+      if (err.response?.data) {
+        const data = err.response.data
+        if (typeof data === 'string') {
+          setError(data)
+        } else if (data.message) {
+          setError(data.message)
+        } else {
+          const messages = Object.entries(data).flatMap(([, msgs]) =>
+            Array.isArray(msgs) ? msgs : [msgs]
+          )
+          setError(messages.join('. ') || 'Error al registrar usuario')
+        }
+      } else {
+        setError('Error al conectar con el servidor')
+      }
     } finally {
       setLoading(false)
     }
@@ -108,8 +128,12 @@ export default function RegisterModal({ onClose, onLoginClick }: RegisterModalPr
               type="text"
               name="dni"
               value={form.dni}
-              onChange={handleChange}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, '')
+                setForm({ ...form, dni: val })
+              }}
               maxLength={8}
+              inputMode="numeric"
               className="w-full bg-[#0a0a0a] border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary-500 transition"
               required
             />

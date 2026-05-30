@@ -1,3 +1,16 @@
+"""
+Módulo `application.bonuses` — Casos de uso del sistema de bonos.
+
+Función:
+- Gestiona aplicación de bonos, creación de `UserBonus`, expiraciones y la
+    lógica de contribución al rollover cuando el usuario apuesta.
+
+Relaciones:
+- Invocado desde `application.betting` tras crear apuestas para procesar
+    contribuciones al rollover.
+- Usa `infrastructure.bonuses` y `infrastructure.wallet` para mover fondos.
+"""
+
 from decimal import Decimal
 from datetime import timedelta
 from django.db import models

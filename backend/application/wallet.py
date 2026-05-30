@@ -1,3 +1,17 @@
+"""
+Módulo `application.wallet` — Casos de uso de la billetera (wallet).
+
+Función:
+- Orquesta operaciones financieras (recargar, retirar, transferir) usando la
+    contabilidad de partida doble implementada en `infrastructure.wallet`.
+- Expone funciones que son llamadas por las vistas en `controllers/wallet.py`.
+
+Relaciones con otras capas:
+- Usa modelos `Account` y `LedgerEntry` desde `infrastructure.wallet`.
+- Valida e invoca transacciones atómicas (Django ORM) para evitar
+    condiciones de carrera.
+"""
+
 import uuid
 from decimal import Decimal
 

@@ -1,3 +1,14 @@
+"""
+Controladores administrativos para la auditoría y alertas de fraude.
+
+Función:
+- Exponer logs de auditoría, verificación de integridad y alertas de
+    actividad sospechosa para uso del equipo de compliance.
+
+Relaciones:
+- Interactúan con `infrastructure.audit` y `application.audit`.
+"""
+
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema

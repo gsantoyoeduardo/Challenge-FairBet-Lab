@@ -1,3 +1,14 @@
+"""
+Serializers y adaptadores para los modelos de `events`.
+
+Función:
+- Convertir modelos de `infrastructure.events` a representaciones JSON
+    usadas por la API (listas, detalles, mercados y selecciones).
+
+Relaciones:
+- Consumidos por `controllers` y por la UI para mostrar eventos y cuotas.
+"""
+
 from rest_framework import serializers
 from infrastructure.events import Sport, Event, Market, Selection
 

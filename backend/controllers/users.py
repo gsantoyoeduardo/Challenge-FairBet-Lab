@@ -1,3 +1,15 @@
+"""
+Controladores HTTP para la API de `users`.
+
+Función:
+- Endpoints de registro, login y gestión de perfil que exponen
+    funcionalidades de `application.users`.
+
+Relaciones:
+- Validaciones de negocio en `application.users`; modelos en
+    `infrastructure.users`.
+"""
+
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser

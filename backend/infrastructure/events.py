@@ -1,3 +1,15 @@
+"""
+Modelos de persistencia para la aplicación `events`.
+
+Función:
+- Define `Sport`, `Event`, `Market` y `Selection` que modelan el dominio
+    de eventos deportivos y mercados de apuestas.
+
+Relaciones:
+- Consumidos por `application.betting` y `betting.consumers` para mostrar
+    cuotas, validar apuestas y generar actualizaciones en tiempo real.
+"""
+
 from django.db import models
 from django.utils import timezone
 from decimal import Decimal

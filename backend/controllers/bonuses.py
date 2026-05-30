@@ -1,3 +1,14 @@
+"""
+Controladores para la API de `bonuses`.
+
+Función:
+- Listar bonos disponibles, reclamar bonos y consultar los bonos del
+    usuario con estado de rollover.
+
+Relaciones:
+- Delegan la lógica a `application.bonuses` y usan `infrastructure.bonuses`.
+"""
+
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiExample

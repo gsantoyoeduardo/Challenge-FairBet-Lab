@@ -1,3 +1,15 @@
+"""
+Modelos de `bonuses`.
+
+Función:
+- Definen tipos de bonos, configuración (porcentaje, rollover) y la
+    relación `UserBonus` que rastrea saldo y progreso de rollover por
+    usuario.
+
+Relaciones:
+- Aplicables desde `application.bonuses` para otorgar y liquidar bonos.
+"""
+
 from django.conf import settings
 from django.db import models
 from django.utils import timezone

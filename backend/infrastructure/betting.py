@@ -1,3 +1,15 @@
+"""
+Modelos de dominio persistidos para `betting`.
+
+Función:
+- `Bet` y `BetSelection` representan apuestas realizadas por usuarios,
+    su estado, cuotas y selecciones asociadas.
+
+Relaciones:
+- `application.betting` crea y liquida `Bet` usando estos modelos; las
+    selecciones referencian `infrastructure.events.Selection`.
+"""
+
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone

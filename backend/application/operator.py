@@ -1,3 +1,14 @@
+"""
+Casos de uso y serializadores para métricas del operador.
+
+Función:
+- Expone serializers usados por endpoints administrativos para calcular
+    métricas (GGR, exposición) y generar reportes CSV.
+
+Relaciones:
+- Usa funciones puras en `domain.operator` para los cálculos.
+"""
+
 from rest_framework import serializers
 from domain.operator import calcular_ggr, calcular_exposure, generar_reporte_csv
 

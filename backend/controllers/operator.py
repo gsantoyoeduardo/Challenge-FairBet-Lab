@@ -1,3 +1,14 @@
+"""
+Controladores administrativos para métricas y reportes del operador.
+
+Función:
+- Exponer métricas (GGR, exposición) y generación de reportes CSV para
+    uso interno del operador.
+
+Relaciones:
+- Consume funciones en `domain.operator` y `application.operator`.
+"""
+
 from django.http import HttpResponse
 from rest_framework import generics, permissions
 from rest_framework.response import Response

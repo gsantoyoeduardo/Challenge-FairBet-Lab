@@ -1,3 +1,15 @@
+"""
+Controladores HTTP para la API de `betting`.
+
+Función:
+- Manejan endpoints para apostar, cash-out, listar apuestas y
+    liquidar — validan requests y llaman a `application.betting`.
+
+Relaciones:
+- Delegan la lógica de negocio a `application.betting` y persisten mediante
+    `infrastructure` cuando corresponda.
+"""
+
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.throttling import ScopedRateThrottle

@@ -1,3 +1,15 @@
+"""
+Serializers para la auditoría del sistema.
+
+Función:
+- Serializar `AuditLog` y `SuspiciousActivity` para exponerlos por la
+    API administrativa y para verificar la integridad de la cadena de
+    auditoría.
+
+Relaciones:
+- Utilizan `infrastructure.audit` como fuente de datos.
+"""
+
 from rest_framework import serializers
 from infrastructure.audit import AuditLog, SuspiciousActivity
 

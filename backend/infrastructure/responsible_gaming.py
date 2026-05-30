@@ -1,3 +1,15 @@
+"""
+Modelos de `responsible_gaming`.
+
+Función:
+- Almacenan límites de depósito, solicitudes de cambio de límite y
+    autoexclusiones del usuario para cumplir requisitos de juego responsable.
+
+Relaciones:
+- Utilizados por `application.responsible_gaming` para validar y procesar
+    cambios y bloqueos de usuario.
+"""
+
 from django.conf import settings
 from django.db import models
 from django.utils import timezone

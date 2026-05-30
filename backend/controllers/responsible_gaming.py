@@ -1,3 +1,15 @@
+"""
+Controladores HTTP para `responsible_gaming`.
+
+Función:
+- Endpoints para consultar y cambiar límites, y para autoexclusión de
+    usuarios. Validan peticiones y delegan en `application.responsible_gaming`.
+
+Relaciones:
+- Usados por la UI y por los endpoints que necesitan bloquear apuestas
+    cuando el usuario está autoexcluido o excede límites.
+"""
+
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiExample

@@ -1,3 +1,15 @@
+"""
+Controladores HTTP para la API de `wallet`.
+
+Función:
+- Exponen endpoints REST (recargar, retirar, consultar saldo) que
+    validan la petición y delegan la lógica a `application.wallet`.
+
+Relaciones:
+- Usan `application.wallet` para casos de uso y `infrastructure.users`
+    para idempotencia.
+"""
+
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.throttling import ScopedRateThrottle

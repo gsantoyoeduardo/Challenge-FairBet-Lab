@@ -1,3 +1,17 @@
+"""
+Módulo `application.betting` — Casos de uso para la gestión de apuestas.
+
+Función:
+- Orquesta la creación de apuestas (simples, combinadas, sistemas), cash-out
+    y liquidación de apuestas.
+- Realiza validaciones de negocio y coordina movimientos contables via
+    `application.wallet.create_double_entry`.
+
+Relaciones:
+- Llamado desde `controllers/betting.py` para atender las rutas HTTP.
+- Usa `domain.betting` para reglas puras y `infrastructure.*` para modelos.
+"""
+
 import logging
 from decimal import Decimal
 from itertools import combinations

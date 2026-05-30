@@ -1,3 +1,16 @@
+"""
+Módulo `application.responsible_gaming` — Casos de uso de juego responsable.
+
+Función:
+- Gestiona límites de depósito, cambios de límite, autoexclusión y
+  validaciones relacionadas con el comportamiento de apuestas del usuario.
+
+Relaciones:
+- Usado por `application.betting` para validar apuestas antes de crear
+  transacciones.
+- Persiste datos en `infrastructure.responsible_gaming`.
+"""
+
 from decimal import Decimal
 import logging
 from django.utils import timezone
@@ -18,30 +31,35 @@ class DepositLimitsSerializer(serializers.ModelSerializer):
                   'limite_apuesta_max', 'limite_perdida_diaria')
 
     def validate_limite_diario(self, value):
+        # Valida que el limite diario no sea negativo.
         err = validate_limit_value(value)
         if err:
             raise serializers.ValidationError(err)
         return value
 
     def validate_limite_semanal(self, value):
+        # Valida que el limite semanal no sea negativo.
         err = validate_limit_value(value)
         if err:
             raise serializers.ValidationError(err)
         return value
 
     def validate_limite_mensual(self, value):
+        # Valida que el limite mensual no sea negativo.
         err = validate_limit_value(value)
         if err:
             raise serializers.ValidationError(err)
         return value
 
     def validate_limite_apuesta_max(self, value):
+        # Valida que el limite por apuesta no sea negativo.
         err = validate_limit_value(value)
         if err:
             raise serializers.ValidationError(err)
         return value
 
     def validate_limite_perdida_diaria(self, value):
+        # Valida que el limite de perdida diaria no sea negativo.
         err = validate_limit_value(value)
         if err:
             raise serializers.ValidationError(err)
@@ -67,14 +85,18 @@ class LimitChangeRequestSerializer(serializers.ModelSerializer):
 
 
 def get_or_create_limits(user) -> DepositLimits:
+    # Recupera los limites del usuario o crea un objeto nuevo si no existe.
     limits, _ = DepositLimits.objects.get_or_create(user=user)
     return limits
 
 
 def apply_limit_change(user, tipo_limite: str, valor: Decimal) -> dict:
+    # Obtiene los limites actuales del usuario.
     limits = get_or_create_limits(user)
+    # Lee el valor anterior del limite solicitado.
     valor_anterior = getattr(limits, tipo_limite, Decimal('0'))
 
+    # Si el nuevo valor es un aumento, valida cooldown de 24h.
     if is_limit_increase(valor_anterior, valor):
         last_change = LimitChangeRequest.objects.filter(
             user=user, tipo_limite=tipo_limite, estado='approved',
@@ -84,6 +106,7 @@ def apply_limit_change(user, tipo_limite: str, valor: Decimal) -> dict:
                 f'Para subir el limite debes esperar {COOLDOWN_HOURS}h desde el ultimo cambio.'
             )
 
+    # Registra la solicitud de cambio de limite como aprobada.
     change = LimitChangeRequest.objects.create(
         user=user,
         tipo_limite=tipo_limite,
@@ -93,6 +116,7 @@ def apply_limit_change(user, tipo_limite: str, valor: Decimal) -> dict:
         approved_at=timezone.now(),
     )
 
+    # Actualiza el modelo de limites del usuario.
     setattr(limits, tipo_limite, valor)
     limits.save()
 
@@ -105,23 +129,27 @@ def apply_limit_change(user, tipo_limite: str, valor: Decimal) -> dict:
 
 
 def create_autoexclusion(user, periodo: str, motivo: str = '') -> AutoExclusion:
+    # Calcula la fecha final de autoexclusión según el periodo seleccionado.
     from datetime import timedelta
     fecha_fin = None
     if periodo != 'indefinida':
         delta = AUTOEXCLUSION_PERIODS[periodo]
         fecha_fin = timezone.now() + delta
 
+    # Crea o reusa el registro de autoexclusión del usuario.
     auto_exclusion, _ = AutoExclusion.objects.get_or_create(
         user=user,
         defaults={'fecha_inicio': timezone.now(), 'fecha_fin': fecha_fin, 'motivo': motivo, 'activa': True},
     )
     if not auto_exclusion.activa:
+        # Si existía pero estaba desactivado, lo reactiva.
         auto_exclusion.fecha_inicio = timezone.now()
         auto_exclusion.fecha_fin = fecha_fin
         auto_exclusion.motivo = motivo
         auto_exclusion.activa = True
         auto_exclusion.save()
 
+    # Cambia el estado del perfil del usuario a autoexcluido.
     profile = user.profile
     error = validate_profile_transition(profile, 'autoexcluido')
     if error:
@@ -133,6 +161,7 @@ def create_autoexclusion(user, periodo: str, motivo: str = '') -> AutoExclusion:
 
 
 def check_and_reactivate_autoexclusion():
+    # Revisa autoexclusiones activas que ya vencieron y las desactiva.
     from django.utils import timezone
     logger = logging.getLogger(__name__)
     now = timezone.now()
@@ -154,6 +183,7 @@ def check_and_reactivate_autoexclusion():
 
 
 def validate_user_limits(user, stake: Decimal) -> str | None:
+    # Valida los limites de apuesta del usuario antes de permitir una apuesta.
     from decimal import Decimal
     from django.utils import timezone
     from infrastructure.betting import Bet
@@ -162,6 +192,7 @@ def validate_user_limits(user, stake: Decimal) -> str | None:
     try:
         limits = user.deposit_limits
     except DepositLimits.DoesNotExist:
+        # Si no tiene limites configurados, no se impone restriccion.
         return None
 
     if limits.limite_apuesta_max and limits.limite_apuesta_max > Decimal('0'):

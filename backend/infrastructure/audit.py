@@ -1,3 +1,16 @@
+"""
+Modelos de persistencia para la auditoría del sistema (`audit`).
+
+Función:
+- `AuditLog` implementa auditoría inmutable mediante encadenamiento de
+    hashes SHA-256 (hash chaining). `SuspiciousActivity` almacena alertas de
+    comportamiento sospechoso detectado por tareas de auditoría.
+
+Relaciones:
+- `audit.tasks` crea entradas en `AuditLog` y `SuspiciousActivity`.
+- Otros módulos crean logs al ejecutar operaciones sensibles.
+"""
+
 import hashlib
 import json
 from django.conf import settings

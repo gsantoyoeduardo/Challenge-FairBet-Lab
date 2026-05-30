@@ -1,3 +1,15 @@
+"""
+Modelos de persistencia para la aplicación `wallet`.
+
+Función:
+- Define `Account` y `LedgerEntry` que representan cuentas y asientos
+    contables (partida doble). Estos modelos son la fuente de verdad para
+    saldos e historiales transaccionales.
+
+Relaciones:
+- Consumidos por `application` (casos de uso) y `controllers` (endpoints).
+"""
+
 import uuid
 
 from django.db import models, transaction

@@ -1,3 +1,16 @@
+"""
+Modelos de persistencia para la aplicación `users`.
+
+Función:
+- Define el `User` personalizado, `UserProfile` y `IdempotencyKey`.
+- `UserProfile` almacena datos KYC y estado de la cuenta (autoexcluido,
+    verificado, bloqueado) usados por las validaciones de negocio.
+
+Relaciones:
+- Consumido por `application.users` y por otros módulos que necesitan
+    información de perfil y claves de idempotencia.
+"""
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
