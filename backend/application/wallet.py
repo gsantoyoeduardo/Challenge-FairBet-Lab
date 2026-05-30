@@ -18,7 +18,6 @@ class RetirarSerializer(serializers.Serializer):
     reference = serializers.CharField(max_length=100, required=False, allow_blank=True)
     idempotency_key = serializers.CharField(max_length=128, required=False, allow_blank=True)
 
-
 class TransferirSerializer(serializers.Serializer):
     to_username = serializers.CharField()
     amount = serializers.DecimalField(max_digits=18, decimal_places=4, min_value=Decimal('0.0001'))

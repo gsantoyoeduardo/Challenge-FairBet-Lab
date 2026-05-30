@@ -3,7 +3,7 @@
 En cumplimiento con la política de evaluación y autoría del reto FairBet Lab, declaro a continuación el uso de herramientas de Inteligencia Artificial Generativa (Gemini) durante la Fase 5 del proyecto:
 
 ## 1. Depuración de Errores (Debugging)
-* **Contexto:** Durante la ejecución de las pruebas automatizadas con Docker (`docker-compose exec backend python manage.py test`).
+* **Contexto:** Durante la ejecución ¿+de las pruebas automatizadas con Docker (`docker-compose exec backend python manage.py test`).
 * **Asistencia:** Utilicé la IA para identificar la causa de un `ModuleNotFoundError` relacionado con la librería `hypothesis` y un `TypeError` por la falta de archivos `__init__.py` en las carpetas de testing.
 * **Resultado:** Comprendí que el contenedor requería la instalación explícita de la dependencia y que Python necesita los archivos de inicialización para descubrir los tests.
 

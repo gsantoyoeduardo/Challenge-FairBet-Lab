@@ -64,7 +64,7 @@ export default function SportDetailView({ sportSlug, sportName, onBack, onSelect
                     return (
                       <button
                         key={s.id}
-                        onClick={() => onSelect(s.id, s.odds, s.name, ev, m.id, m.type)}
+                        onClick={() => onSelect(s.id, s.odds, s.name, ev)}
                         className={`px-2 py-0.5 rounded text-xs font-semibold transition ${
                           isSel ? 'bg-primary-500 text-black' : 'bg-[#1a1a1a] hover:bg-[#252525] text-gray-300'
                         }`}

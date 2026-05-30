@@ -10,7 +10,6 @@ from application.responsible_gaming import check_and_reactivate_autoexclusion
 
 logger = logging.getLogger(__name__)
 
-
 @shared_task
 def check_fraud_patterns():
     now = timezone.now()
